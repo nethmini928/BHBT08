@@ -370,3 +370,103 @@
             </section>
         </main>
     </div>
+
+    <script>
+        // Revenue Chart (Line Chart)
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [18000, 24000, 20000, 20430],
+                    borderColor: 'rgba(94, 96, 206, 1)',
+                    backgroundColor: 'rgba(94, 96, 206, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            color: 'var(--muted)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: 'var(--muted)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Users Chart (Doughnut Chart)
+        const usersCtx = document.getElementById('usersChart').getContext('2d');
+        const usersChart = new Chart(usersCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['North America', 'Europe', 'Asia', 'Other'],
+                datasets: [{
+                    label: 'User Distribution',
+                    data: [4500, 3000, 2500, 3240],
+                    backgroundColor: [
+                        '#5e60ce', // Accent 4
+                        '#4ecdc4', // Accent 3
+                        '#ffd166', // Accent 2
+                        '#ff6b6b'  // Accent 1
+                    ],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#e6eef6' // Text color for legend
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed !== null) {
+                                    label += context.parsed.toLocaleString() + ' users';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
