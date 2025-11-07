@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Colorful Dashboard</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root{
+            --bg:#0f1724;
+            --card:#0b1220;
+            --muted:#9aa6b2;
+            --glass: rgba(255,255,255,0.03);
+            --accent1: #ff6b6b;
+            --accent2: #ffd166;
+            --accent3: #4ecdc4;
+            --accent4: #5e60ce;
+            --glass-border: rgba(255,255,255,0.04);
+            --radius:14px;
+        }
+
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+            background:
+                radial-gradient(1200px 600px at 10% 10%, rgba(94,96,206,0.12), transparent),
+                radial-gradient(1000px 500px at 90% 80%, rgba(78,205,196,0.08), transparent),
+                var(--bg);
+            color:#e6eef6;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            padding:28px;
+        }
+
+        .app {
+            display:grid;
+            grid-template-columns:260px 1fr;
+            gap:20px;
+            align-items:start;
+            max-width:1200px;
+            margin:0 auto;
+        }
+
+        /* SIDEBAR */
+        .sidebar{
+            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border:1px solid var(--glass-border);
+            border-radius:var(--radius);
+            padding:18px;
+            height:calc(100vh - 56px);
+            position:sticky;
+            top:28px;
+            display:flex;
+            flex-direction:column;
+            gap:18px;
+            overflow:auto;
+        }
+
+        .brand{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            padding-bottom:6px;
+            border-bottom:1px dashed rgba(255,255,255,0.03);
+        }
+        .logo{
+            width:44px;height:44px;border-radius:10px;
+            background:linear-gradient(135deg,var(--accent4),var(--accent3));
+            box-shadow:0 6px 18px rgba(94,96,206,0.16), inset 0 -6px 16px rgba(255,255,255,0.03);
+            display:flex;align-items:center;justify-content:center;font-weight:700;
+        }
+        .brand h1{font-size:16px;margin:0}
+        .brand p{margin:0;font-size:12px;color:var(--muted)}
+
+        .nav{
+            display:flex;flex-direction:column;gap:6px;margin-top:6px;
+        }
+        .nav a{
+            color:inherit;text-decoration:none;padding:10px;border-radius:10px;display:flex;gap:10px;align-items:center;
+            transition:all .18s ease;
+        }
+        .nav a:hover{transform:translateX(6px);background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent)}
+        .nav svg{opacity:0.9}
+
+        .quick{
+            margin-top:auto;
+            font-size:13px;color:var(--muted);
+            display:flex;flex-direction:column;gap:8px;
+        }
+        .profile{
+            display:flex;gap:10px;align-items:center;padding:10px;border-radius:10px;background:var(--glass);
+        }
+        .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),#ff8fa3);display:flex;align-items:center;justify-content:center;font-weight:700}
+
+        /* MAIN */
+        .main{
+            min-height: calc(100vh - 56px);
+            position:relative;
+        }
+
+        header.topbar{
+            display:flex;
+            gap:16px;
+            align-items:center;
+            margin-bottom:18px;
+        }
+        .search{
+            flex:1;
+            display:flex;align-items:center;gap:8px;
+            background:var(--glass);
+            padding:10px;border-radius:12px;border:1px solid var(--glass-border);
+        }
+        .search input{border:0;background:transparent;color:inherit;outline:none;width:100%}
+        .actions{display:flex;gap:10px;align-items:center}
+
+        .grid{
+            display:grid;
+            grid-template-columns:repeat(12,1fr);
+            gap:14px;
+            align-items:start;
+        }
+
+        .card{
+            background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            border:1px solid var(--glass-border);
+            border-radius:12px;padding:14px;
+            box-shadow:0 6px 30px rgba(2,6,23,0.45);
+        }
+
+        /* top cards */
+        .stat{
+            grid-column:span 3;
+            display:flex;flex-direction:column;gap:8px;
+            padding:14px;border-radius:12px;
+        }
+        .stat .title{font-size:13px;color:var(--muted)}
+        .stat .value{font-size:20px;font-weight:700}
+        .stat .delta{font-size:13px;color:var(--muted)}
+
+        .chart-lg{grid-column:span 6;padding:12px}
+        .list{grid-column:span 3;padding:12px;display:flex;flex-direction:column;gap:12px}
+
+        .progress{
+            height:8px;background:rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;
+        }
+        .progress > i{display:block;height:100%;border-radius:8px}
+
+        .tasks{display:flex;flex-direction:column;gap:8px}
+        .task{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+
+        /* table area */
+        .table{grid-column:span 12;margin-top:14px;overflow:auto;padding:12px}
+        table{width:100%;border-collapse:collapse;color:inherit}
+        th,td{padding:12px 8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03)}
+        th{font-size:12px;color:var(--muted)}
+        td .chip{padding:6px 10px;border-radius:999px;font-size:12px;color:#081223;font-weight:600}
+
+        .chip.green{background:linear-gradient(90deg,#7ef0d6,#4ecdc4)}
+        .chip.yellow{background:linear-gradient(90deg,#ffe29a,#ffd166)}
+        .chip.red{background:linear-gradient(90deg,#ffb3b3,#ff6b6b)}
+        .chip.blue{background:linear-gradient(90deg,#c3c9ff,#5e60ce)}
+
+        /* responsiveness */
+        @media (max-width:1000px){
+            .app{grid-template-columns:1fr; padding:18px}
+            .sidebar{position:static;height:auto;flex-direction:row;overflow:auto;padding:10px;border-radius:12px}
+            .brand{display:none}
+            .main{margin-top:10px}
+            .stat{grid-column:span 6}
+            .chart-lg{grid-column:span 12}
+            .list{grid-column:span 12}
+            .table{grid-column:span 12}
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar" role="navigation" aria-label="Sidebar">
+            <div class="brand">
+                <div class="logo">DB</div>
+                <div>
+                    <h1>BrightDash</h1>
+                    <p>analytics workspace</p>
+                </div>
+            </div>
+
+            <nav class="nav" aria-label="Main navigation">
+                <a href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 13h8V3H3v10zM13 21h8V11h-8v10zM13 3v6h8V3h-8zM3 21h8v-6H3v6z" fill="currentColor"/></svg> Overview</a>
+                <a href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 6v9a2 2 0 01-2 2H7a2 2 0 01-2-2V9l7-6z" fill="currentColor"/></svg> Projects</a>
+                <a href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 7a5 5 0 100 10 5 5 0 000-10zM4 21v-2a6 6 0 0112 0v2H4z" fill="currentColor"/></svg> Users</a>
+                <a href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2l4 4-4 4-4-4 4-4zM2 12l4 4-4 4 4-4-4-4zM22 12l-4 4 4 4-4-4 4-4z" fill="currentColor"/></svg> Settings</a>
+            </nav>
+
+            <div class="quick">
+                <div class="profile">
+                    <div class="avatar">N</div>
+                    <div style="flex:1">
+                        <div style="font-weight:700">Nethmi</div>
+                        <div style="font-size:12px;color:var(--muted)">Product Manager</div>
+                    </div>
+                    <div style="font-size:13px;color:var(--muted)">⋮</div>
+                </div>
+
+                <div style="display:flex;gap:8px">
+                    <button style="flex:1;padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:linear-gradient(90deg,var(--accent2),rgba(255,255,255,0.02));color:#081223;font-weight:600">New</button>
+                    <button style="padding:10px;border-radius:10px;border:1px solid var(--glass-border);background:transparent;color:var(--muted)">Export</button>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="topbar">
+                <div class="search">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <input type="search" placeholder="Search reports, users, projects..." />
+                </div>
+
+                <div class="actions">
+                    <button class="card" style="padding:10px;border-radius:10px;background:linear-gradient(90deg,var(--accent3),var(--accent4));border:0;color:#071023">Analytics</button>
+                    <div class="card" style="display:flex;align-items:center;padding:8px 12px;border-radius:10px">🔔</div>
+                </div>
+            </header>
+
+            <section class="grid">
+                <!-- stats -->
+                <div class="stat card" style="background:linear-gradient(135deg, rgba(255,107,107,0.06), rgba(94,96,206,0.02));">
+                    <div class="title">Total Sales</div>
+                    <div class="value">$82,430</div>
+                    <div class="delta">+12.4% this month</div>
+                    <div class="progress" aria-hidden>
+                        <i style="width:72%;background:linear-gradient(90deg,var(--accent1),#ff8fa3)"></i>
+                    </div>
+                </div>
+
+                <div class="stat card" style="background:linear-gradient(135deg, rgba(255,209,102,0.06), rgba(255,255,255,0.01));">
+                    <div class="title">Active Users</div>
+                    <div class="value">13,240</div>
+                    <div class="delta">+4.1% this week</div>
+                    <div class="progress" aria-hidden>
+                        <i style="width:56%;background:linear-gradient(90deg,var(--accent2),#ffd58d)"></i>
+                    </div>
+                </div>
+
+                <div class="stat card" style="background:linear-gradient(135deg, rgba(78,205,196,0.06), rgba(255,255,255,0.01));">
+                    <div class="title">New Signups</div>
+                    <div class="value">1,980</div>
+                    <div class="delta">+8.7% today</div>
+                    <div class="progress" aria-hidden>
+                        <i style="width:38%;background:linear-gradient(90deg,var(--accent3),#7ef0d6)"></i>
+                    </div>
+                </div>
+
+                <div class="stat card" style="background:linear-gradient(135deg, rgba(99,103,238,0.06), rgba(255,255,255,0.01));">
+                    <div class="title">Server Load</div>
+                    <div class="value">68%</div>
+                    <div class="delta">Stable</div>
+                    <div class="progress" aria-hidden>
+                        <i style="width:68%;background:linear-gradient(90deg,var(--accent4),#9da4ff)"></i>
+                    </div>
+                </div>
+
+                <!-- large chart -->
+                <div class="card chart-lg">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div>
+                            <div style="font-size:13px;color:var(--muted)">Revenue (30 days)</div>
+                            <div style="font-weight:700;font-size:16px">$82,430 <span style="font-size:12px;color:var(--muted)">vs $72,900 last month</span></div>
+                        </div>
+                        <div style="font-size:12px;color:var(--muted)">Export ⤓</div>
+                    </div>
+                    <canvas id="revenueChart" height="160"></canvas>
+                </div>
+
+                <!-- sidebar list -->
+                <div class="card list">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <div style="font-weight:700">Top Products</div>
+                            <div style="font-size:12px;color:var(--muted)">By revenue</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--muted)">View all</div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div style="font-weight:700">Aurora Pro</div>
+                                <div style="font-size:12px;color:var(--muted)">2,420 sales</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700">$28,120</div>
+                                <div style="font-size:12px;color:var(--muted)">+8.2%</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div style="font-weight:700">Nimbus Lite</div>
+                                <div style="font-size:12px;color:var(--muted)">1,090 sales</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700">$12,320</div>
+                                <div style="font-size:12px;color:var(--muted)">+3.9%</div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center">
+                            <div>
+                                <div style="font-weight:700">Orbit Addon</div>
+                                <div style="font-size:12px;color:var(--muted)">760 sales</div>
+                            </div>
+                            <div style="text-align:right">
+                                <div style="font-weight:700">$6,450</div>
+                                <div style="font-size:12px;color:var(--muted)">-1.4%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- tasks -->
+                <div class="card tasks" style="grid-column:span 6">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                        <div>
+                            <div style="font-weight:700">Tasks</div>
+                            <div style="font-size:12px;color:var(--muted)">Project updates & reminders</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--muted)">4 pending</div>
+                    </div>
+
+                    <div class="task"><div><input type="checkbox" checked /> <span style="margin-left:8px">Release v2.1</span></div><div style="font-size:12px;color:var(--muted)">Due in 2d</div></div>
+                    <div class="task"><div><input type="checkbox" /> <span style="margin-left:8px">Fix payment bug</span></div><div style="font-size:12px;color:var(--muted)">High</div></div>
+                    <div class="task"><div><input type="checkbox" /> <span style="margin-left:8px">Design review</span></div><div style="font-size:12px;color:var(--muted)">Low</div></div>
+                    <div class="task"><div><input type="checkbox" /> <span style="margin-left:8px">Update docs</span></div><div style="font-size:12px;color:var(--muted)">Tomorrow</div></div>
+                </div>
+
+                <!-- small chart -->
+                <div class="card" style="grid-column:span 6">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                        <div>
+                            <div style="font-weight:700">User Distribution</div>
+                            <div style="font-size:12px;color:var(--muted)">By region</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--muted)">Live</div>
+                    </div>
+                    <canvas id="usersChart" height="180"></canvas>
+                </div>
+
+                <!-- table -->
+                <div class="table card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                        <div>
+                            <div style="font-weight:700">Recent Transactions</div>
+                            <div style="font-size:12px;color:var(--muted)">Latest payments and invoices</div>
+                        </div>
+                        <div style="font-size:12px;color:var(--muted)">View all</div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr><th>Order</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>#9832</td><td>Nora Reed</td><td>$1,240</td><td><span class="chip green">Paid</span></td><td>2025-10-28</td></tr>
+                            <tr><td>#9828</td><td>Acme Co.</td><td>$9,500</td><td><span class="chip yellow">Pending</span></td><td>2025-10-27</td></tr>
+                            <tr><td>#9823</td><td>LogiCorp</td><td>$420</td><td><span class="chip red">Failed</span></td><td>2025-10-27</td></tr>
+                            <tr><td>#9819</td><td>Horizon</td><td>$3,200</td><td><span class="chip blue">Refunded</span></td><td>2025-10-26</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Revenue line chart
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length:30},(_,i)=>i+1),
+                datasets: [
+                    { label:'This month', data: [4200,3800,4500,4700,4300,5300,5800,6100,5900,6200,6400,6600,7000,7200,6900,7400,7600,7800,7600,8000,8200,8400,8300,8700,9000,9200,9400,9700,9800,10100], borderColor:'rgba(94,96,206,0.95)', backgroundColor:'rgba(94,96,206,0.12)', fill:true, tension:0.32, pointRadius:0 },
+                    { label:'Last month', data: [3800,3500,3900,4200,4100,4700,5200,5400,5200,5600,5800,6000,6300,6500,6400,6800,7000,7100,7000,7300,7500,7600,7500,7800,8000,8200,8300,8500,8600,8800], borderColor:'rgba(78,205,196,0.95)', backgroundColor:'rgba(78,205,196,0.06)', fill:true, tension:0.32, pointRadius:0 }
+                ]
+            },
+            options: {
+                responsive:true,
+                maintainAspectRatio:false,
+                plugins:{legend:{display:false}},
+                scales:{
+                    x:{display:false},
+                    y:{grid:{color:'rgba(255,255,255,0.03)'}}
+                }
+            }
+        });
+
+        // Users doughnut chart
+        const ctx2 = document.getElementById('usersChart').getContext('2d');
+        const usersChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels:['Americas','EMEA','APAC','Other'],
+                datasets:[{
+                    data:[48,28,20,4],
+                    backgroundColor:['#5e60ce','#4ecdc4','#ffd166','#ff6b6b'],
+                    hoverOffset:6
+                }]
+            },
+            options:{
+                responsive:true,
+                maintainAspectRatio:false,
+                plugins:{legend:{position:'bottom',labels:{color:'#dbe9ff'}}}
+            }
+        });
+    </script>
+</body>
+</html></div>
